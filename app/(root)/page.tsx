@@ -10,7 +10,16 @@ export default async function Home({
   searchParams: Promise<{ query?: string }>;
 }) {
   const query = (await searchParams).query;
-  const params = { search: query || null };
+  //const params = { search: query || null };
+  const normalizedSearch =
+  !query ||
+  query === "null" ||
+  query === "undefined" ||
+  query.trim() === ""
+    ? null
+    : query;
+
+const params = { search: normalizedSearch };
 
   const session = await auth();
   console.log(session?._id);
