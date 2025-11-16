@@ -166,14 +166,17 @@ const StartupForm = () => {
         <label htmlFor="image" className="startup-form_label">
           Startup Image
         </label>
-        <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-xl">
-          <Input
+        <div className="flex flex-col gap-4 p-5 border-2 border-dashed border-gray-400 rounded-xl bg-gray-50">
+          <input
             id="image"
             name="image"
             type="file"
             accept="image/*"
-            className="startup-form_input file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+            //className="startup-form_file-input"
             onChange={handleImageChange}
+            className="w-full border border-black rounded-xl p-3 bg-white cursor-pointer
+                 file:bg-primary file:text-white file:border-0 file:px-4 file:py-2 
+                 file:rounded-lg file:cursor-pointer"
             required
           />
           
