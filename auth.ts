@@ -13,26 +13,56 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({user,account,profile}) {
-      const existingUser = await client
+        async signIn({ user, account, profile }) {
+        const existingUser = await client
         .withConfig({ useCdn: false })
         .fetch(AUTHOR_BY_GITHUB_ID_QUERY, {
-          id:  profile?.id,
+          id: profile?.id,
         });
 
-      if (!existingUser) {
+        if (!existingUser) {
+        // 1️⃣ Fetch GitHub avatar as a file
+        const avatarUrl = user.image; // github avatar URL
+        let imageAsset = null;
+
+        if (avatarUrl) {
+          const res = await fetch(avatarUrl);
+          const buffer = await res.arrayBuffer();
+
+          const file = new File([buffer], "avatar.jpg", {
+            type: "image/jpeg",
+          });
+
+          // 2️⃣ Upload to Sanity
+          imageAsset = await writeClient.assets.upload("image", file, {
+            filename: "avatar.jpg",
+          });
+        }
+
+        // 3️⃣ Create the author document with the correct image structure
         await writeClient.create({
           _type: "author",
-          id:profile?.id,
+          id: profile?.id,
           name: user.name,
           username: profile?.login,
           email: user?.email,
-          image: user.image,
           bio: profile?.bio || "",
+
+          ...(imageAsset && {
+            image: {
+              _type: "image",
+              asset: {
+                _type: "reference",
+                _ref: imageAsset._id,
+              },
+            },
+          }),
         });
       }
+
       return true;
     },
+
     async jwt({ token, account, profile }) {
       if (account && profile) {
         const user = await client
