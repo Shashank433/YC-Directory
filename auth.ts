@@ -21,7 +21,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         });
 
         if (!existingUser) {
-        // 1️⃣ Fetch GitHub avatar as a file
+        // Fetch GitHub avatar as a file
         const avatarUrl = user.image; // github avatar URL
         let imageAsset = null;
 
@@ -33,13 +33,13 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             type: "image/jpeg",
           });
 
-          // 2️⃣ Upload to Sanity
+          // Upload to Sanity
           imageAsset = await writeClient.assets.upload("image", file, {
             filename: "avatar.jpg",
           });
         }
 
-        // 3️⃣ Create the author document with the correct image structure
+        // Create the author document with the correct image structure
         await writeClient.create({
           _type: "author",
           id: profile?.id,
