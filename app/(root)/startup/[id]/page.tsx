@@ -17,11 +17,11 @@ const page = async ({params} : {params: Promise<{id:string}>}) => {
     const id = (await params).id;
     //This is part of Parallel fetching editor picks as Startup Id query doesn't depend on it
     const [post, { select: editorPosts }] = await Promise.all([
-    client.fetch(STARTUP_BY_ID_QUERY, { id }),
-    client.fetch(PLAYLIST_BY_SLUG_QUERY, {
-      slug: "editor-picks-new",
-    }),
-  ]);
+      client.fetch(STARTUP_BY_ID_QUERY, { id }),
+      client.fetch(PLAYLIST_BY_SLUG_QUERY, {
+        slug: "editor-picks",
+      }),
+    ]);
 
     //This is part of sequestial rendering
     // const post  = await client.fetch(STARTUP_BY_ID_QUERY, {id});
