@@ -2,50 +2,68 @@
 
 import { auth } from "@/auth";
 import { writeClient } from "@/sanity/lib/write-client";
-import { parseServerActionResponse } from "./utils";
 import slugify from "slugify";
+import { parseServerActionResponse } from "./utils";
 
 export const createPitch = async (
   state: any,
   form: FormData,
-  pitch: string,
+  pitch: string
 ) => {
   const session = await auth();
 
-  if (!session)
+  if (!session) {
     return parseServerActionResponse({
       error: "Not signed in",
       status: "ERROR",
     });
+  }
 
-  const { title, description, category, link } = Object.fromEntries(
-    //Array.from(form).filter(([key]) => key !== "pitch"),
-    Array.from(form).filter(([key]) => !["pitch", "image"].includes(key)),
-  );
-
+  const title = form.get("title") as string;
+  const description = form.get("description") as string;
+  const category = form.get("category") as string;
   const imageFile = form.get("image") as File;
-  const slug = slugify(title as string, { lower: true, strict: true });
+
+  const slug = slugify(title, { lower: true, strict: true });
 
   try {
-    const imageAsset = await writeClient.assets.upload('image', imageFile);
-    
+    // Upload image to Sanity
+    let uploadedImage = null;
+
+    if (imageFile && imageFile.size > 0) {
+      uploadedImage = await writeClient.assets.upload("image", imageFile, {
+        filename: imageFile.name,
+      });
+    }
+
+    // Build the startup document
     const startup = {
+      _type: "startup",
       title,
       description,
       category,
-      image: link,
+      pitch,
       slug: {
-        _type: slug,
+        _type: "slug",
         current: slug,
       },
       author: {
         _type: "reference",
-        _ref: session?.id,
+        _ref: session.id,
       },
-      pitch,
+      ...(uploadedImage && {
+        image: {
+          _type: "image",
+          asset: {
+            _type: "reference",
+            _ref: uploadedImage._id,
+          },
+        },
+      }),
     };
 
-    const result = await writeClient.create({ _type: "startup", ...startup });
+    // Save to Sanity
+    const result = await writeClient.create(startup);
 
     return parseServerActionResponse({
       ...result,
@@ -53,10 +71,10 @@ export const createPitch = async (
       status: "SUCCESS",
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return parseServerActionResponse({
-      error: JSON.stringify(error),
+      error: String(error),
       status: "ERROR",
     });
   }

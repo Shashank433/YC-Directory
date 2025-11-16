@@ -6,11 +6,13 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import React, { Suspense } from 'react'
 import UserStartups from '@/components/UserStartups';
+import { urlFor } from '@/sanity/lib/image';
 
 const page = async ({params}: {params:Promise<{id:string}>}) => {
     const id = (await params).id;
     const session = await auth();
     const user = await client.fetch(AUTHOR_BY_ID_QUERY, {id});
+    //console.log(user.image);
     if(!user) return notFound();
   return (
     <>
@@ -23,7 +25,7 @@ const page = async ({params}: {params:Promise<{id:string}>}) => {
           </div>
 
           <Image
-            src={user.image}
+            src={urlFor(user.image)}
             alt={user.name}
             width={220}
             height={220}
