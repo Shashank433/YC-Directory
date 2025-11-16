@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import StartupCard, { StartupTypeCard } from "@/components/StartupCard";
 import SearchForm from "../../components/SearchForm";
 import { auth } from "@/auth";
@@ -23,7 +25,7 @@ const params = { search: normalizedSearch };
 
   const session = await auth();
   console.log(session?._id);
-  const { data: posts } = await sanityFetch({ query: STARTUPS_QUERY, params });
+  const { data: posts } = await sanityFetch({ query: STARTUPS_QUERY, params});
 
   return (
     <>
